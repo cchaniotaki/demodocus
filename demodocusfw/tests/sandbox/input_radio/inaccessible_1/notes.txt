@@ -1,1 +1,0 @@
-The last button has an aria-disabled which may make it appear unclickable to disabled users.

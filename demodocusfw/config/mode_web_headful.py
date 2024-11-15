@@ -32,5 +32,19 @@ See documentation for details.
 """
 
 from .mode_accessibility import *
+from dotenv import load_dotenv
+import os
+load_dotenv()
+HEADLESS = os.getenv("HEADLESS")
 
-HEADLESS = False
+BROWSER = os.getenv("BROWSER")
+
+PROXY = os.getenv("PROXY")
+
+MITMPROXY_PATH = os.getenv("MITMPROXY_PATH")
+
+PROXY_PORT = os.getenv("PROXY_PORT")
+
+PROXY_HOST = os.getenv("PROXY_HOST")
+
+CACHE_PATH = os.getenv("CACHE_PATH")

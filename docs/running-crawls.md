@@ -28,7 +28,7 @@ The crawl output directory may be passed as a runtime option using
 ## Configuration options
 
 To see the browser in action during crawling, set the configuration variable
-`HEADLESS` to `False`. This is `True` by default because seeing multiple
+`FHEADLESS` to `False`. This is `True` by default because seeing multiple
 browsers pop up and run autonomously should only happen when you are you sure
 you want it to happen.
 

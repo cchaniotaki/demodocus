@@ -30,8 +30,9 @@ from demodocusfw.web.server import ThreadedHTTPServer
 from demodocusfw.controller import Controller
 from demodocusfw.utils import DemodocusTemporaryDirectory, set_up_logging, stop_logging
 from demodocusfw.web.web_access import ChromeWebAccess
-
-
+from dotenv import load_dotenv
+import os
+load_dotenv()
 class TestKeyboardEvaluation(unittest.TestCase):
 
     ep_template = 'http://{}:{}/demodocusfw/tests/sandbox/{}'
@@ -48,7 +49,13 @@ class TestKeyboardEvaluation(unittest.TestCase):
         # Set up config.
         config.MULTI = False
         config.NUM_THREADS = 1
-        config.HEADLESS = True
+        config.HEADLESS = os.getenv("HEADLESS")
+        config.BROWSER = os.getenv("BROWSER")
+        config.PROXY = os.getenv("PROXY")
+        config.MITMPROXY_PATH = os.getenv("MITMPROXY_PATH")
+        config.PROXY_PORT = os.getenv("PROXY_PORT")
+        config.PROXY_HOST = os.getenv("PROXY_HOST")
+        config.CACHE_PATH = os.getenv("CACHE_PATH")
         config.OUTPUT_DIR = DemodocusTemporaryDirectory()
         cls.controller = Controller(ChromeWebAccess, config)
 

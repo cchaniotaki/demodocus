@@ -205,9 +205,11 @@ def crawl_one(controller, entry_point, crawl, build_user, users,
     logger.info('Crawling {}'.format(entry_point))
 
     t0 = time()
+    print("eoooopp")
     if not controller.load(entry_point):
         logger.error('Failed to load entry point')
         raise Exception('Failed to load entry point')
+    print("opa")
     if len(users) == 0:
         # If no users are specified for crawling, let's just build the graph without crawling it.
         logger.warning('No valid users specified, graph will be built but not crawled.')

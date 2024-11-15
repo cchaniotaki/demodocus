@@ -24,15 +24,28 @@ let us know where this software is being used.
 
 from demodocusfw.config.mode_accessibility import *
 from demodocusfw.utils import DemodocusTemporaryDirectory
-
-
+from dotenv import load_dotenv
+import os
+load_dotenv()
 # Note: this is a reminder we're using temp dirs in crawl tests, this value
 # will be overwritten by the command line.
 OUTPUT_DIR = DemodocusTemporaryDirectory()
 
 SCREENSHOTS = False
 
-HEADLESS = True
+HEADLESS = os.getenv("HEADLESS")
+
+BROWSER = os.getenv("BROWSER")
+
+PROXY = os.getenv("PROXY")
+
+MITMPROXY_PATH = os.getenv("MITMPROXY_PATH")
+
+PROXY_PORT = os.getenv("PROXY_PORT")
+
+PROXY_HOST = os.getenv("PROXY_HOST")
+
+CACHE_PATH = os.getenv("CACHE_PATH")
 
 REDUCED_CRAWL = False
 

@@ -44,8 +44,10 @@ from selenium.common.exceptions import (
 )
 
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.color import Color
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.edge.options import Options as EdgeOptions
 
 from .dom_manipulations import (
     collapse_newlines,
@@ -78,8 +80,87 @@ from demodocusfw.web.controller import ControllerReduced, \
 from demodocusfw.web.server import ThreadedHTTPServer
 from demodocusfw.web import utils as wutils
 
-
 logger = logging.getLogger('crawler.webaccess')
+
+
+def set_up_chrome_driver(config, user_data_dir_name):
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-sync")
+    chrome_options.add_argument("--disable-web-security")  # optional to view devtools
+    chrome_options.add_argument(f"--window-size={config.WINDOW_SIZE[0]},"
+                                f"{config.WINDOW_SIZE[1]}")
+
+    print("config.PROXY", config.PROXY)
+    print(type(config.PROXY))
+    print("config.PROXY_HOST", config.PROXY_HOST)
+    print("config.PROXY_PORT", config.PROXY_PORT)
+    if config.PROXY:
+        print(f"--proxy-server=http://{config.PROXY_HOST}:{config.PROXY_PORT}")
+        chrome_options.add_argument(f"--proxy-server=http://{config.PROXY_HOST}:{config.PROXY_PORT}")
+
+    if config.HEADLESS == "True":
+        chrome_options.add_argument("--headless")
+
+    chrome_options.add_argument(f'--user-data-dir={user_data_dir_name}')
+    chrome_options.add_argument('--verbose')
+    # https://stackoverflow.com/questions/48450594/selenium-timed-out-receiving-message-from-renderer
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Needed if running from Docker to avoid memory problems
+    chrome_options.add_argument("enable-automation")
+    chrome_options.add_argument("--disable-infobars")
+    # options.add_argument("--remote-debugging-port=9222")
+    chrome_options.add_argument("--disable-hang-monitor")  # The Hang Monitor closes slow processes
+    chrome_options.add_argument("--no-first-run")  # Don't do any first-run tasks
+    chrome_options.add_argument("--disable-default-apps")  # Disables installation of default apps on first run.
+    chrome_options.add_argument(
+        "--disable-background-networking")  # Disables systems that send requests in the background
+    chrome_options.add_argument("--safebrowsing-disable-auto-update")  # Keeps safebrowsing from updating
+
+    chrome_options.add_argument("--disable-permission-action-reporting")
+    chrome_options.add_argument("--disable-permissions-api")
+
+    # Set up the Chrome driver
+    driver = webdriver.Chrome(options=chrome_options)
+
+    return driver
+
+
+def set_up_edge_driver(config, user_data_dir_name):
+    edge_options = EdgeOptions()
+    edge_options.add_argument("--no-sandbox")
+    edge_options.add_argument("--disable-gpu")
+    edge_options.add_argument("--disable-sync")
+    edge_options.add_argument("--disable-web-security")  # optional to view devtools
+    edge_options.add_argument(f"--window-size={config.WINDOW_SIZE[0]},"
+                              f"{config.WINDOW_SIZE[1]}")
+
+    if config.PROXY:
+        print(f"--proxy-server=http://{config.PROXY_HOST}:{config.PROXY_PORT}")
+        edge_options.add_argument(f"--proxy-server=http://{config.PROXY_HOST}:{config.PROXY_PORT}")
+    if config.HEADLESS == "True":
+        edge_options.add_argument("--headless")
+
+    edge_options.add_argument(f'--user-data-dir={user_data_dir_name}')
+    edge_options.add_argument('--verbose')
+    # https://stackoverflow.com/questions/48450594/selenium-timed-out-receiving-message-from-renderer
+    edge_options.add_argument("--disable-dev-shm-usage")  # Needed if running from Docker to avoid memory problems
+    edge_options.add_argument("enable-automation")
+    edge_options.add_argument("--disable-infobars")
+    # options.add_argument("--remote-debugging-port=9222")
+    edge_options.add_argument("--disable-hang-monitor")  # The Hang Monitor closes slow processes
+    edge_options.add_argument("--no-first-run")  # Don't do any first-run tasks
+    edge_options.add_argument("--disable-default-apps")  # Disables installation of default apps on first run.
+    edge_options.add_argument(
+        "--disable-background-networking")  # Disables systems that send requests in the background
+    edge_options.add_argument("--safebrowsing-disable-auto-update")  # Keeps safebrowsing from updating
+
+    edge_options.add_argument("--disable-permission-action-reporting")
+    edge_options.add_argument("--disable-permissions-api")
+
+    # Set up the Chrome driver
+    driver = webdriver.Edge(options=edge_options)
+    return driver
 
 
 class WebAccess(Access):
@@ -95,6 +176,7 @@ class WebAccess(Access):
         We'll also store the xpath for locating it on the page.
         Must specify either xpath or selenium_element or lxml_element
         """
+
         def __init__(self):
             # These get filled in by Access::_get_element
             self.xpath = None
@@ -108,13 +190,13 @@ class WebAccess(Access):
         def get_full_representation(self):
             """Returns a full string represenation of the state."""
             return self.xpath
-        
+
         def __eq__(self, other):
             # Check to see if the element is in the same location in the dom.
             # In what cases is this not good enough? Consider cnn.com -- sometimes
             #   divs are out of order or inserted randomly.
             return self.xpath == other.xpath
-            
+
         def __hash__(self):
             return hash(str(self))
 
@@ -171,6 +253,7 @@ class WebAccess(Access):
     # Overridden functions from Access
     #
     def load(self, url):
+        print("edooooooo load", url)
         """Navigates to the entry point, loads it up without running JavaScript and saves it.
         This "bare bones" version of the entry page will be used when forward-tracking to states.
         Then the function injects the source back into the browser (with JavaScript) to begin crawling.
@@ -188,6 +271,8 @@ class WebAccess(Access):
         # This is not foolproof. Sometimes we load a page three times and won't find
         #   all the randomized content, or any at all.
         if self._driver is None:
+            print("oaooaoaoaoaoaoa")
+            print(self._config)
             self._create_driver(self._config)
         load_count = 0
         template = HtmlTemplate()
@@ -205,7 +290,8 @@ class WebAccess(Access):
             if template2.is_stable():
                 logger.info(f"{url} took {load_time} seconds to stabilize.")
             else:
-                logger.warning(f"{url} loaded in {load_time} seconds except for unstable xpaths: {template2.get_unstable_xpaths()}")
+                logger.warning(
+                    f"{url} loaded in {load_time} seconds except for unstable xpaths: {template2.get_unstable_xpaths()}")
             template.add_template(template2)
         for el_xpath in sorted(template.get_unstable_xpaths()):
             # When we do comparisons, we should remove or ignore these elements.
@@ -221,7 +307,7 @@ class WebAccess(Access):
         return True
 
     def set_state(self, state):
-                
+
         # Now follow the edges to get to the desired state.
         path = state.get_user_path(self._build_user)
 
@@ -229,7 +315,7 @@ class WebAccess(Access):
         while self._driver and len(self._driver.window_handles) > 1:
             self._driver.close()
             self._driver.switch_to.window(self._driver.window_handles[-1])
-            
+
         if path is None or len(path) == 0:
             self._entry_state = state
         else:
@@ -303,6 +389,7 @@ class WebAccess(Access):
     RE_BROKEN_OPS = re.compile(r"""window\.document\.domain\s?=\s?("|').*?\1;""")
 
     def _save_raw_dom_to_local(self, url):
+        print("edoooooo _save_raw_dom_to_local", url)
         """Grabs the raw page source from the server, without running any script on it.
         Then injects additional Javascript to do the following post-processing:
         - Monitor any event-handler registrations and add them to a list.
@@ -332,7 +419,7 @@ class WebAccess(Access):
         # Get absolute url as it may have been redirected
         # e.g., https://wisconsindot.gov/Pages/home.aspx -> https://wisconsindot.gov
         # Resources will use src|href="/path/to" which needs absolute path
-        split_url = url.split('/') # Gives ['http:', '', 'domain.com', ...]
+        split_url = url.split('/')  # Gives ['http:', '', 'domain.com', ...]
         abs_url = f"{split_url[0]}//{split_url[2]}"
 
         # Cut off any trailing slash.
@@ -374,6 +461,7 @@ class WebAccess(Access):
         my_exception = None
         for i in range(1, 5):
             try:
+                print("self._driver.get(url)", url)
                 self._driver.get(url)
                 # Each time we load it, augment the template.
                 # What are the multithreaded considerations?
@@ -493,9 +581,9 @@ class WebAccess(Access):
         # list of changing elements in the cycle.
         # We do not stop at one period but keep moving all the way back through all the templates we gathered
         # in case we captured multiple periods.
-        stable_index = len(templates_by_timestamp)-1
+        stable_index = len(templates_by_timestamp) - 1
         queued_templates = list()
-        for i in range(len(templates_by_timestamp)-1, 0, -1):
+        for i in range(len(templates_by_timestamp) - 1, 0, -1):
             seconds, t2 = templates_by_timestamp[i]
             xpaths = t2.get_unstable_xpaths()
             if xpaths == unstable_xpaths:
@@ -506,7 +594,7 @@ class WebAccess(Access):
                 for t3 in queued_templates:
                     template.add_template(t3)
                 # Mark the index before this set of element(s) started changing.
-                stable_index = i-1
+                stable_index = i - 1
             else:
                 # Different element(s) were changing. Queue up this template in case we have a cycle.
                 queued_templates.append(templates_by_timestamp[i][1])
@@ -564,7 +652,8 @@ class WebAccess(Access):
             try:
                 popup_keywords = {"Modal", "Popup", "Overlay"}
                 # See if there is some sort of close button we can click.
-                popup_xpath = [f"""contains(., "{keyword}") or contains(., "{keyword.lower()}")""" for keyword in popup_keywords]
+                popup_xpath = [f"""contains(., "{keyword}") or contains(., "{keyword.lower()}")""" for keyword in
+                               popup_keywords]
                 popup_xpath = """//*[@*[""" + " or ".join(popup_xpath) + """]]"""
                 # for keyword in popup_keywords:
                 # modal_xpath += f"""//*[@*[contains(., "{keyword}") or contains(., "{keyword.lower()}")""" + \
@@ -577,7 +666,7 @@ class WebAccess(Access):
                 }
                 close_button_xpaths = {popup_xpath + close_button_xpath for close_button_xpath in close_button_xpaths}
                 close_button_xpath = "|".join(close_button_xpaths)
-                close_button = self._driver.find_element_by_xpath(close_button_xpath)
+                close_button = self._driver.find_element(By.XPATH, close_button_xpath)
                 logger.warning("Popup found, dismissing.")
                 close_button.click()
                 return True
@@ -632,7 +721,7 @@ class WebAccess(Access):
                 edge_metrics.error = NoSuchElementException(message)
                 edge_metrics.ability_score = 0.0
                 return edge_metrics
-                
+
             # Make sure the element is reachable.
             if sel_el.get_attribute('demod_reachable') == "false":
                 # If it's not reachable, maybe we need to dismiss a popup.
@@ -686,9 +775,9 @@ class WebAccess(Access):
                 self._driver.switch_to.window(new_tab)
                 # No need to do anything here since we won't be exploring the tab any further.
 
-            try: 
+            try:
                 dom = self._get_dom()
-                break # Successfully acted on the element and were able to retrieve the dom
+                break  # Successfully acted on the element and were able to retrieve the dom
             except TimeoutException as e:
                 logger.warning(f"Timeout occured while retrieving DOM. Error {e}")
                 logger.info(f"Attempting to restart the chrome browser and retry action.")
@@ -699,7 +788,8 @@ class WebAccess(Access):
                 self.set_state(self._current_state)
             except UnexpectedAlertPresentException:
                 # This is to handle the AUTHORIZED ONLY! warning on the irs.gov refund status page.
-                logger.warning(f"Unexpected alert while checking dom {self._driver.current_url}... Dismissing and retrying...")
+                logger.warning(
+                    f"Unexpected alert while checking dom {self._driver.current_url}... Dismissing and retrying...")
                 logger.warning(f"Last action performed: {action} on "
                                f"{element}.")
                 try:
@@ -740,7 +830,8 @@ class WebAccess(Access):
             if dom_changed:
                 # If the url is the same, but the new dom doesn't have any events in it,
                 # then all we did was reload this same page.
-                if self._driver.current_url == prev_url and self.run_js("return document.documentElement.getAttribute('demod_events')") is None:
+                if self._driver.current_url == prev_url and self.run_js(
+                        "return document.documentElement.getAttribute('demod_events')") is None:
                     self._current_state_data = self._entry_state.data  # We reloaded the page.
                     return edge_metrics
                 # Something about the dom changed, so update the state data.
@@ -763,7 +854,7 @@ class WebAccess(Access):
             The DOM as a string.
         """
         src = "return document.documentElement.outerHTML"
-        
+
         # This fails frequently enough that we try to handle errors locally
         # if we are unable to resolve, we raise the errors upstream
         retryAttempts = 5
@@ -784,7 +875,6 @@ class WebAccess(Access):
                 if retryAttempts == 0:
                     raise e
 
-        
         # Get rid of unicode.
         # src = src.encode('ascii', 'ignore').decode('unicode_escape')
         # Strip out any demodocus_ignore elements.
@@ -806,6 +896,7 @@ class WebAccess(Access):
         Returns:
             The result of the javascript.
         """
+
         # If any of the args are Elements, convert them to Selenium WebElements.
         def _convert_args_to_elements(args):
             args = list(args)
@@ -878,7 +969,7 @@ class WebAccess(Access):
             xpath = self.get_state_data().get_xpath_for_lxml(lxml_element)
         if xpath is None:
             return None  # We had no way to get the element xpath.
-        
+
         # See if it's already cached.
         if xpath in self._elements:
             return self._elements[xpath]
@@ -922,11 +1013,11 @@ class WebAccess(Access):
             root = self._driver
         if find_one:
             try:
-                return self._get_element(selenium_element=root.find_element_by_xpath(query))
+                return self._get_element(selenium_element=root.find_element(By.XPATH, query))
             except NoSuchElementException:
                 return None
         else:
-            return {self._get_element(selenium_element=el) for el in root.find_elements_by_xpath(query)}
+            return {self._get_element(selenium_element=el) for el in root.find_elements(By.XPATH, query)}
 
     def get_selenium_element(self, element):
         """Returns the Selenium WebElement associated with a WebAccess::Element.
@@ -935,7 +1026,7 @@ class WebAccess(Access):
             # We haven't seen this element before so grab it by xpath.
             element = self._get_element(element.xpath)
             try:
-                element._selenium_element = self._driver.find_element_by_xpath(element.xpath)
+                element._selenium_element = self._driver.find_element(By.XPATH, element.xpath)
             except NoSuchElementException:
                 # This element no longer exists. Perhaps the page kept changing after we saved its state,
                 #   or we're just trying to get an element that isn't on this page.
@@ -945,7 +1036,7 @@ class WebAccess(Access):
             element = self._elements[element.xpath]
             # Make sure this element has a selenium_element.
             if element._selenium_element is None:
-                element._selenium_element = self._driver.find_element_by_xpath(element.xpath)
+                element._selenium_element = self._driver.find_element(By.XPATH, element.xpath)
             else:
                 # If it does have a selenium element stored, make sure it's not stale.
                 try:
@@ -953,7 +1044,7 @@ class WebAccess(Access):
                 except StaleElementReferenceException:
                     # The page has changed since we last retrieved it so get the element again.
                     try:
-                        element._selenium_element = self._driver.find_element_by_xpath(element.xpath)
+                        element._selenium_element = self._driver.find_element(By.XPATH, element.xpath)
                     except NoSuchElementException:
                         # This element no longer exists. Perhaps the page kept changing after we saved its state,
                         #   or we're just trying to get an element that isn't on this page.
@@ -1086,8 +1177,8 @@ class WebAccess(Access):
             orig_focused_xpath = el_xpath
 
         self._driver.execute_script(js_focus_first_tabbable)
-        self.wait_for_animation() # Have to check for animation after each focus
-        
+        self.wait_for_animation()  # Have to check for animation after each focus
+
         # Get element activated by the tab above
         first_el = self._driver.switch_to.active_element
 
@@ -1103,7 +1194,7 @@ class WebAccess(Access):
 
             if recorded_tabbable == 0:
                 active_el = first_el
-            
+
             # Record data about the active element
             xpath = self._get_xpath_for_selenium_element(active_el)
 
@@ -1126,7 +1217,7 @@ class WebAccess(Access):
                         "x": active_el.location["x"],
                         "y": active_el.location["y"]
                     },
-                    "unfocused_style_info": None, # Retrieved after tabbing to the next element
+                    "unfocused_style_info": None,  # Retrieved after tabbing to the next element
                     "focused_style_info": self.get_style_info(active_el),
                 }
 
@@ -1137,13 +1228,12 @@ class WebAccess(Access):
             try:
                 active_el.send_keys(Keys.TAB)
                 self.wait_for_animation()
-                
+
                 # Set active el back to the active element
                 active_el = self._driver.switch_to.active_element
             except ElementNotInteractableException as e:
                 # Unable to tab on this element, stop collecting tab order and return results
                 logger.error(f"Found uninteractable element while generating tab order.\n {str(e)}")
-                
 
             # Grab the styling of the element we are currently inspecting when it is unfocused
             # NOTE: This unfocused style could be problematic if:
@@ -1193,7 +1283,7 @@ class WebAccess(Access):
         index2 = max(start_index, end_index)
         # Getting the min of the distance between indices, or the wrap-around
         #  index distance, since tabs can go forward or backwards
-        dist = min(index2-index1, index1 + (len(tab_dict)-index2))
+        dist = min(index2 - index1, index1 + (len(tab_dict) - index2))
         if dist < 0:
             logger.warning(f"Got negative distance with index1: {index1}; "
                            f"index2: {index2}; len(tab_dict): {len(tab_dict)}")
@@ -1236,7 +1326,7 @@ class WebAccess(Access):
 
             # getting the parent element, or breaking the loop if it doesn't exist
             try:
-                background_el = background_el.find_element_by_xpath('..')
+                background_el = background_el.find_element(By.XPATH, '..')
             except:
                 break
 
@@ -1294,7 +1384,7 @@ class WebAccess(Access):
             with open(output_path / "temp.html", 'w', encoding='utf-8') as fp:
                 fp.write(source)
             self._driver.get(f'http://{self._config.server_ip}:{self._config.server_port}/temp.html')
-            self.wait_for_stable_dom(seconds_interval=.5,  seconds_threshold=1)
+            self.wait_for_stable_dom(seconds_interval=.5, seconds_threshold=1)
             self.wait_for_animation()
             return True
         except Exception:
@@ -1310,46 +1400,15 @@ class ChromeWebAccess(WebAccess):
     def _create_driver(self, config):
         """See discussion at https://stackoverflow.com/a/50827853"""
         options = Options()
-        # Access-specific parameters from the config.
-        if getattr(config, "HEADLESS", True):
-            options.add_argument("--headless")
-
-        # Other parameters.
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--disable-sync")
-        options.add_argument("--disable-web-security")                      # Disables the same-origin policy (needed for document.write)
-        options.add_argument(f"--window-size={config.WINDOW_SIZE[0]},"
-                             f"{config.WINDOW_SIZE[1]}")
-
-        # user-data-dir is required with the --disable-web-security flag in some versions of Chrome (intermittent).
-        # If this begins to cause issues please see:https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome
         user_data_dir_name = self._create_user_data_dir()
-        options.add_argument(f'--user-data-dir={user_data_dir_name}')
 
-        options.add_argument('--verbose')
-        # https://stackoverflow.com/questions/48450594/selenium-timed-out-receiving-message-from-renderer
-        options.add_argument("--disable-dev-shm-usage")                     # Needed if running from Docker to avoid memory problems
-        options.add_argument("enable-automation")
-        options.add_argument("--disable-infobars")
-        # options.add_argument("--remote-debugging-port=9222")
-        options.add_argument("--disable-hang-monitor")                    # The Hang Monitor closes slow processes
-        options.add_argument("--no-first-run")                              # Don't do any first-run tasks
-        options.add_argument("--disable-default-apps")                      # Disables installation of default apps on first run.
-        options.add_argument("--disable-background-networking")             # Disables systems that send requests in the background
-        options.add_argument("--safebrowsing-disable-auto-update")          # Keeps safebrowsing from updating
+        # cchaniotaki: make it work for Chrome, Edge and Firefox
 
-        options.add_argument("--disable-permission-action-reporting")
-        options.add_argument("--disable-permissions-api")
+        if config.BROWSER == "chrome":
+            self._driver = set_up_chrome_driver(config, user_data_dir_name)
+        elif config.BROWSER == "edge":
+            self._driver = set_up_edge_driver(config, user_data_dir_name)
 
-        # SSL-related switches
-        # options.add_argument("--ssl-insecure")                            # Allows mixed secure/insecure content
-        # options.add_argument("--disable-client-side-phishing-detection")  # Ignores invalid server certificates
-        # options.add_argument("--allow-insecure-localhost")                # Ignores SSL/TSL errors on localhost
-        # options.add_argument("--ignore-certificate-errors")               # Ignores SSL/TSL cert checking on client
-        # options.add_argument("--ignore-urlfetcher-cert-requests")         # Ignores server cert requests
-
-        self._driver = webdriver.Chrome(options=options)
         self._driver.set_page_load_timeout(15)
 
     def _create_user_data_dir(self):

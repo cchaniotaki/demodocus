@@ -30,6 +30,10 @@ from demodocusfw.web.user import OmniUser as WebOmniUser
 from demodocusfw.web.web_access import ChromeWebAccess
 from demodocusfw.web.build_data import WebBuildData
 
+
+from dotenv import load_dotenv
+import os
+load_dotenv()
 #
 # Access specification - Fill in these after you have defined your Access class and Users.
 #
@@ -52,7 +56,19 @@ STATE_DATA = WebStateData
 # Make webdriver browser instance invisible to crawler users?
 #  Default True (invisible). Note that when HEADLESS == False, a browser
 #  window will open for every active thread.
-HEADLESS = True
+HEADLESS = os.getenv("HEADLESS")
+
+BROWSER = os.getenv("BROWSER")
+
+PROXY = os.getenv("PROXY")
+
+MITMPROXY_PATH = os.getenv("MITMPROXY_PATH")
+
+PROXY_PORT = os.getenv("PROXY_PORT")
+
+PROXY_HOST = os.getenv("PROXY_HOST")
+
+CACHE_PATH = os.getenv("CACHE_PATH")
 
 # For headful or headless browser instances, set the window size for all chrome
 #  windows opened.

@@ -1,2 +1,0 @@
-The aria-disabled attribute in this example will make the screen reader say that the checkbox is unavailable despite
-actually being available.

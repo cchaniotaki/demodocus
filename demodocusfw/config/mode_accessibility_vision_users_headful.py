@@ -23,5 +23,21 @@ let us know where this software is being used.
 """
 
 from .mode_accessibility_vision_users import *
+from dotenv import load_dotenv
+import os
 
-HEADLESS = False
+load_dotenv()
+
+HEADLESS = os.getenv("HEADLESS")
+
+BROWSER = os.getenv("BROWSER")
+
+PROXY = os.getenv("PROXY")
+
+MITMPROXY_PATH = os.getenv("MITMPROXY_PATH")
+
+PROXY_PORT = os.getenv("PROXY_PORT")
+
+PROXY_HOST = os.getenv("PROXY_HOST")
+
+CACHE_PATH = os.getenv("CACHE_PATH")

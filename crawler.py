@@ -23,6 +23,9 @@ If this code is used in a deployment or embedded within another project,
 it is requested that you send an email to opensource@mitre.org in order to
 let us know where this software is being used.
 """
+import time
+
+from mitmproxy import MitmproxyManager
 
 """
 Main script for running the demodocus crawler at demodocusfw.crawler.
@@ -33,7 +36,12 @@ import importlib.util
 import logging
 from pathlib import Path
 import sys
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+# url = os.getenv("URL")
 from demodocusfw.crawler import Crawler, check_config_mode, \
     import_config_from_spec
 
@@ -45,16 +53,15 @@ DEFAULT_CONFIG_MODE = 'demodocusfw.config.mode_accessibility_vision_users'
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('entry_point', nargs='?', metavar='ep', default=None,
-                        help='String to use to load or launch the initial state to crawl, like a url')
-    parser.add_argument('-i', '--inputfile', nargs='?',
-                        help='entry points to crawl, one per line')
+    # parser.add_argument('entry_point', nargs='?', metavar='ep', default=None,
+    #                     help='String to use to load or launch the initial state to crawl, like a url')
+    # parser.add_argument('-i', '--inputfile', nargs='?',
+    #                     help='entry points to crawl, one per line')
 
     # Should be specified in configuration; here only as convenience to
     # support testing
-    parser.add_argument('--output_dir', default=None,
-                        help='Output file directory')
-
+    # parser.add_argument('--output_dir', default=None,
+    #                     help='Output file directory')
     # Configuration file as python module name, e.g. 'localconfig.mode_mytest'.
     # Default mode is 'demodocusfw.config.mode_default'. Alternate modes should
     # start with "from demodocusfw.config.mode_default import *".
@@ -69,21 +76,31 @@ def parse_args():
                         dest='log_level', const=logging.INFO,
                         help='Verbose log output (logging at INFO)')
     args = parser.parse_args()
-
     # allow args to accept new item assignments
     d = vars(args)
-
     # converting either url argument into a python list of url strings
-    if args.entry_point is None:
-        d['entry_points'] = [line.strip() for line in fileinput.input(args.inputfile)]
+    if os.getenv("URL") is None:
+        d['entry_points'] = [line.strip() for line in fileinput.input(os.getenv("URL_FILE"))]
     else:
-        d['entry_points'] = [args.entry_point]
+        d['entry_points'] = [os.getenv("URL")]
+    entry_points = d['entry_points']
+    return args, entry_points
 
-    return args
+
+def start_crawler(entry_points, config):
+    print("Start crawler")
+    crawler = Crawler(config=config)
+    crawler.crawl_all(entry_points)
+    del crawler
 
 
 if __name__ == '__main__':
-    args = parse_args()
+
+    url = os.getenv("URL")
+    proxy = os.getenv("PROXY")
+    browser = os.getenv("BROWSER")
+    print("get args")
+    args, entry_points = parse_args()
 
     logger.debug(f'Loading config mode: {args.mode}')
     if args.mode == 'default':
@@ -97,12 +114,37 @@ if __name__ == '__main__':
     config = import_config_from_spec(config_spec)
 
     # If these args are present on command line, override even a specified mode
-    if args.output_dir is not None:
-        config.OUTPUT_DIR = Path(args.output_dir)
+    # if args.output_dir is not None:
+    # TODO analoga me to broswers na anoigo to antistixo
+    if browser == "chrome":
+        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_CHROME"))
+    elif browser == "firefox":
+        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_FIREFOX"))
+    elif browser == "edge":
+        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_EDGE"))
 
     if args.log_level is not None:
         config.LOG_LEVEL = args.log_level
+    print(entry_points)
+    print("proxy", proxy)
+    if proxy == "True":
+        print("Start proxy server")
+        mitmproxy_dump = str(os.getenv("MITMPROXY_PATH")) + "/mitmdump"
+        print(mitmproxy_dump)
+        mitm_manager = MitmproxyManager(mitmproxy_dump, os.getenv("PROXY_PORT"), os.getenv("CACHE_PATH"))
+        try:
+            mitm_manager.start()
+            # Additional actions can be placed here
+            print("You can now perform additional actions after starting mitmproxy.")
+            config.PROXY = True
+            config.PROXY_HOST = os.getenv('PROXY_HOST')
+            config.PROXY_PORT = os.getenv('PROXY_PORT')
+            start_crawler(entry_points, config)
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            mitm_manager.stop()
+    else:
+        start_crawler(entry_points, config)
 
-    crawler = Crawler(config=config)
-    crawler.crawl_all(args.entry_points)
-    del crawler
+#

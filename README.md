@@ -2,40 +2,65 @@
 
 ![Python package](https://github.com/mitre/demodocus/workflows/Python%20package/badge.svg)
 
-This framework is intended to extend the capabilities of current automated accessibility testing tools into the realm of dynamic web content. 
+This framework is intended to extend the capabilities of current automated accessibility testing tools into the realm 
+of dynamic web content. 
 
 In the current workflow, most websites are evaluated for accessibility using:
 1. Static tools which check the `html` and `css` of the page to predict inaccessible content
-2. Semi-automated tools which can execute pre-configured interactions with the web pages to reach new web page states and then (usually) run a static tool.
-3. Human expert testing in which a human user may use the tools above plus other manually driven tools such as a screen reader to check for accessibility violations.
+2. Semi-automated tools which can execute pre-configured interactions with the web pages to reach new web page states 
+and then (usually) run a static tool.
+3. Human expert testing in which a human user may use the tools above plus other manually driven tools such as a 
+screen reader to check for accessibility violations.
 
-The current problem with these methods is that static tools **do not** check dynamic web content since they don't interact with the page, semi-automated tools are fragile to change and usualy only check the state, not the transition, and human expert testing is expensive and not comprehensive. 
+The current problem with these methods is that static tools **do not** check dynamic web content since they don't 
+interact with the page, semi-automated tools are fragile to change and usualy only check the state, 
+not the transition, and human expert testing is expensive and not comprehensive. 
 
-We introduce this software prototype of the Demodocus framework as a solution to the problems posed above. We attempt to ease the burden on human experts by automatically testing the dynamic web content on web pages without apriori information about the page. This means that ideally the tool can be given a page and will automatically identify interactable content, exercise it, and then report back which interactions were inaccessible. 
+We introduce this software prototype of the Demodocus framework as a solution to the problems posed above. 
+We attempt to ease the burden on human experts by automatically testing the dynamic web content on web pages 
+without apriori information about the page. This means that ideally the tool can be given a page and will 
+automatically identify interactable content, exercise it, and then report back which interactions were inaccessible. 
 
-A common example for this process might be a web page with a dropdown navbar that can only be opened via mouse events. Upon loading the page, Demodocus would identify that the navbar has event handlers attached to it and thus may be interactable. It would then attempt to perform a series of mouse and keyboard actions on the navbar. If it found that mouse actions opened up the navbar, but that no keyboard action achieved the same, then it would report that a violation for the dropdown navbar. 
+A common example for this process might be a web page with a dropdown navbar that can only be opened via mouse events. 
+Upon loading the page, Demodocus would identify that the navbar has event handlers attached to it and thus may be 
+interactable. It would then attempt to perform a series of mouse and keyboard actions on the navbar. If it found that 
+mouse actions opened up the navbar, but that no keyboard action achieved the same, then it would report that a 
+violation for the dropdown navbar. 
 
 ## Algorithm
 
 The basis for how Demodocus works is quite approachable and can help to get in the mindset for what we are attempting to do.
 
-When Demodocus first arrives at a site, it will first find all elements that it thinks are interactable and will attempt to exercise them. We do this intial crawl with our `Omniuser`, which is modeled as an "omni-potent" user. That is, it can do any and everything with no restriction on the content. At the end of this step, we will have built our `Omni-graph` which will serve as our frame of reference later on. For a simple web page it may look like:
+When Demodocus first arrives at a site, it will first find all elements that it thinks are interactable and will 
+attempt to exercise them. We do this intial crawl with our `Omniuser`, which is modeled as an "omni-potent" user. 
+That is, it can do any and everything with no restriction on the content. At the end of this step, we will have 
+built our `Omni-graph` which will serve as our frame of reference later on. For a simple web page it may look like:
 
 <img src="./docs/images/omni-graph.png" width="400" height="250" alt="Omni bots graph">
 
-In the graph, you can see the initial state leads to several other states through various edges. In this case, the states are specific instances of content and functionality of the web page and the edges are the interactions between them. Referring back to the dropdown navbar, a closed and an open navbar would be seperate states and the event to open the navbar would be the edge between them. 
+In the graph, you can see the initial state leads to several other states through various edges. In this case, the 
+states are specific instances of content and functionality of the web page and the edges are the interactions between 
+them. Referring back to the dropdown navbar, a closed and an open navbar would be seperate states and the event to 
+open the navbar would be the edge between them. 
 
-We now run a modelled user with a disability over the web page to determine what content it has access to. For example, we might model a user that can only use the keyboard and find that for the same site as above that the user cannot traverse the edges with the `onMouseOver` events. When comparing to the `omni-graph` we see that this looks like the image below, where the blue states with a solid border are reachable for a keyboard user and the red states with a dotted border are inaccessible to the user. 
+We now run a modelled user with a disability over the web page to determine what content it has access to. For example, 
+we might model a user that can only use the keyboard and find that for the same site as above that the user cannot 
+traverse the edges with the `onMouseOver` events. When comparing to the `omni-graph` we see that this looks like the 
+image below, where the blue states with a solid border are reachable for a keyboard user and the red states with a 
+dotted border are inaccessible to the user. 
 
 <img src="./docs/images/keyboard-graph.png" width="400" height="250" alt="Keyboard vs Omni Graph">
 
-At this point, we can say that states 3, 5, and 6 are unreachable, and we can point the the `onMouseover` from states 3 and 5 as the reason. Finally, this can be reported back to developers or accessibility experts for further remediation. 
+At this point, we can say that states 3, 5, and 6 are unreachable, and we can point the the `onMouseover` from states 
+3 and 5 as the reason. Finally, this can be reported back to developers or accessibility experts for further remediation. 
 
-There is a lot of complexity under the hood for implementing this algorithm in the world of web applications along with other checks and features that have been added, but at its core this is still the goal we are trying to achieve. 
+There is a lot of complexity under the hood for implementing this algorithm in the world of web applications along 
+with other checks and features that have been added, but at its core this is still the goal we are trying to achieve. 
 
 ## Documentation
 
-Below are some short details on how to get setup and running if you want to test quickly. If you would like more detailed information, please see the [Full Documentation](https://mitre.github.io/demodocus/).
+Below are some short details on how to get setup and running if you want to test quickly. If you would like more 
+detailed information, please see the [Full Documentation](https://mitre.github.io/demodocus/).
 
 ## Setup
 
@@ -62,6 +87,8 @@ After setting up, you should be able to run the crawler with the default configu
 ```bash
 % python crawler.py http://example.com # Replace with url you wish to evaluate
 ```
+
+python crawler.py https://www.wikipedia.org
 
 ### Configuration Options
 
@@ -225,3 +252,34 @@ it is requested that you send an email to opensource@mitre.org in order to
 let us know where this software is being used.
 
 APPROVED FOR PUBLIC RELEASE. CASE NUMBER: 20-2318
+
+
+
+## Christina Notes:
+
+python3 -m venv myenv
+
+source myenv/bin/activate
+
+pip install -r requirements.txt
+
+ pip install jellyfish==0.8.2
+
+pip install load_dotenv
+
+python setup.py develop
+
+
+python3 crawler.py https://www.wikipedia.org --output_dir /Users/christinechaniotaki/PycharmProjects/SQL/demodocus/output
+
+
+python3 crawler.py https://www.wikipedia.org --output_dir /Users/christinechaniotaki/Documents/Krawler-study/state-of-the-art-tools/demodocus/output
+
+
+prosthesa sto kodika na dineis to browser type kai na trexei analoga. tha deiksei an tha doulepsei
+thelo na vaglo kai to arg me ta entry points. as to allakso kai auto 
+
+
+pleon ta exo ola sto .env
+ara mporo na to trekso etsi: 
+python3 crawler.py

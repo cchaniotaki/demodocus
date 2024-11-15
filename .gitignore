@@ -128,3 +128,5 @@ localconfig/*
 # R stuff
 *.DS_Store
 *.Rhistory
+/myenv/
+/mitmproxy-5.3.0/

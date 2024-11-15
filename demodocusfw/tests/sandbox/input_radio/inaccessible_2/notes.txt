@@ -1,1 +1,0 @@
-Does not pause on success or error. Maybe this should be more part accessible, but it would be a bad practice.

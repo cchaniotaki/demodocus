@@ -26,6 +26,8 @@ import math
 import re
 import logging
 
+from selenium.webdriver.common.by import By
+
 from demodocusfw.build_data import BuildData
 from demodocusfw.utils import color_contrast_ratio
 
@@ -247,7 +249,7 @@ class WebBuildData(BuildData):
             current_xpath = web_access._current_state_data.orig_focused_xpath
             try:
                 # First, try to get the element directly from selenium
-                current_el = web_access._driver.find_element_by_xpath(current_xpath)
+                current_el = web_access._driver.find_element(By.XPATH, current_xpath)
                 current_loc = current_el.location
             except:
                 try:
