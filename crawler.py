@@ -117,11 +117,9 @@ if __name__ == '__main__':
     # if args.output_dir is not None:
     # TODO analoga me to broswers na anoigo to antistixo
     if browser == "chrome":
-        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_CHROME"))
-    elif browser == "firefox":
-        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_FIREFOX"))
+        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_CHROME") + "/" + os.getenv("URL_NAME_ID"))
     elif browser == "edge":
-        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_EDGE"))
+        config.OUTPUT_DIR = Path(os.getenv("OUTPUT_EDGE") + "/" + os.getenv("URL_NAME_ID"))
 
     if args.log_level is not None:
         config.LOG_LEVEL = args.log_level

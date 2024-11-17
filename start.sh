@@ -9,7 +9,7 @@ sed -i '' 's/^BROWSER=.*/BROWSER=chrome/' .env
 python crawler.py
 
 ## Step 5: Update .env file to browser=edge
-sed -i '' 's/^BROWSER=.*/BROWSER=edge/' .env
+#sed -i '' 's/^BROWSER=.*/BROWSER=edge/' .env
 #
 ## Step 6: Run qs.js again with edge configuration
-python crawler.py
+#python crawler.py
