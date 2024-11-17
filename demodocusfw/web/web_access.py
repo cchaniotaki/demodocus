@@ -122,7 +122,7 @@ def set_up_chrome_driver(config, user_data_dir_name):
 
     # Set up the Chrome driver
     driver = webdriver.Chrome(options=chrome_options)
-
+    driver.set_window_size(1280, 1024)
     return driver
 
 
@@ -160,6 +160,7 @@ def set_up_edge_driver(config, user_data_dir_name):
 
     # Set up the Chrome driver
     driver = webdriver.Edge(options=edge_options)
+    driver.set_window_size(1280, 1024)
     return driver
 
 
