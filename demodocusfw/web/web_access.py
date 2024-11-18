@@ -89,8 +89,8 @@ def set_up_chrome_driver(config, user_data_dir_name):
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--disable-sync")
     chrome_options.add_argument("--disable-web-security")  # optional to view devtools
-    chrome_options.add_argument(f"--window-size={config.WINDOW_SIZE[0]},"
-                                f"{config.WINDOW_SIZE[1]}")
+    # chrome_options.add_argument(f"--window-size={config.WINDOW_SIZE[0]},"
+    #                             f"{config.WINDOW_SIZE[1]}")
 
     print("config.PROXY", config.PROXY)
     print(type(config.PROXY))

@@ -143,6 +143,7 @@ if __name__ == '__main__':
         finally:
             mitm_manager.stop()
     else:
+        print("Start without proxy")
         start_crawler(entry_points, config)
 
 #
