@@ -35,7 +35,7 @@ class MitmproxyManager:
             "-p", str(self.proxy_port),
             "--ssl-insecure"  # Allow insecure SSL connections
         ]
-
+        print(cmd)
         self.mitmproxy_process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL)
         self.wait_for_port_in_use(self.proxy_port)
         print(f"MitmproxyManager: mitmproxy started on port {self.proxy_port}")

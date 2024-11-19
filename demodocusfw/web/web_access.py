@@ -48,7 +48,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.color import Color
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.edge.options import Options as EdgeOptions
-
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service as ChromeService
 from .dom_manipulations import (
     collapse_newlines,
     insert_after,
@@ -121,7 +122,10 @@ def set_up_chrome_driver(config, user_data_dir_name):
     chrome_options.add_argument("--disable-permissions-api")
 
     # Set up the Chrome driver
-    driver = webdriver.Chrome(options=chrome_options)
+    service = ChromeService(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    # driver = webdriver.Chrome(options=chrome_options)
     driver.set_window_size(1280, 1024)
     return driver
 

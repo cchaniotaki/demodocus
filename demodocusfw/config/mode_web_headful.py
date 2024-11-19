@@ -47,4 +47,4 @@ PROXY_PORT = os.getenv("PROXY_PORT")
 
 PROXY_HOST = os.getenv("PROXY_HOST")
 
-CACHE_PATH = os.getenv("CACHE_PATH")
+CACHE_PATH = os.getenv("CACHE_PATH_WITH_NAME")

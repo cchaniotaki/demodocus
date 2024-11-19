@@ -55,7 +55,7 @@ class TestKeyboardEvaluation(unittest.TestCase):
         config.MITMPROXY_PATH = os.getenv("MITMPROXY_PATH")
         config.PROXY_PORT = os.getenv("PROXY_PORT")
         config.PROXY_HOST = os.getenv("PROXY_HOST")
-        config.CACHE_PATH = os.getenv("CACHE_PATH")
+        config.CACHE_PATH = os.getenv("CACHE_PATH_WITH_NAME")
         config.OUTPUT_DIR = DemodocusTemporaryDirectory()
         cls.controller = Controller(ChromeWebAccess, config)
 
