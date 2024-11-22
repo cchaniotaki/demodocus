@@ -25,8 +25,6 @@ let us know where this software is being used.
 """
 import time
 
-from mitmproxy import MitmproxyManager
-
 """
 Main script for running the demodocus crawler at demodocusfw.crawler.
 """
@@ -126,24 +124,10 @@ if __name__ == '__main__':
     print(entry_points)
     print("proxy", proxy)
     if proxy == "True":
-        print("Start proxy server")
-        mitmproxy_dump = str(os.getenv("MITMPROXY_PATH")) + "mitmdump"
-        print(mitmproxy_dump)
-        mitm_manager = MitmproxyManager(mitmproxy_dump, os.getenv("PROXY_PORT"), os.getenv("CACHE_PATH_WITH_NAME"))
-        try:
-            mitm_manager.start()
-            # Additional actions can be placed here
-            print("You can now perform additional actions after starting mitmproxy.")
-            config.PROXY = True
-            config.PROXY_HOST = os.getenv('PROXY_HOST')
-            config.PROXY_PORT = os.getenv('PROXY_PORT')
-            start_crawler(entry_points, config)
-        except Exception as e:
-            print(f"Error: {e}")
-        finally:
-            mitm_manager.stop()
+        config.PROXY = True
+        config.PROXY_HOST = os.getenv('PROXY_HOST')
+        config.PROXY_PORT = os.getenv('PROXY_PORT')
+        start_crawler(entry_points, config)
     else:
         print("Start without proxy")
         start_crawler(entry_points, config)
-
-#
