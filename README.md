@@ -270,7 +270,7 @@ pip install load_dotenv
 python setup.py develop
 
 
-python3 crawler.py https://www.wikipedia.org --output_dir /Users/christinechaniotaki/PycharmProjects/SQL/demodocus/output
+python3 crawler.py https://www.wikipedia.org --output_dir /Users/christinechaniotaki/Desktop/output
 
 
 python3 crawler.py https://www.wikipedia.org --output_dir /Users/christinechaniotaki/Documents/Krawler-study/state-of-the-art-tools/demodocus/output

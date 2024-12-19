@@ -35,4 +35,4 @@ CRAWL_USERS = [VizKeyUser, VizMouseKeyUser, SuperVizMouseKeyUser,
                LowVizMouseKeyUser]
 
 # Tall enough to crawl MITRE.org entirely
-WINDOW_SIZE = (1500, 4200)
+WINDOW_SIZE = (1280, 1024)

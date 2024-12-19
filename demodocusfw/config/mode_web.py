@@ -72,12 +72,12 @@ CACHE_PATH = os.getenv("CACHE_PATH_WITH_NAME")
 
 # For headful or headless browser instances, set the window size for all chrome
 #  windows opened.
-WINDOW_SIZE = (1920, 1080)
+WINDOW_SIZE = (1280, 1024)
 
 # If REDUCED_CRAWL is true, Demodocus will perform a crawl that does not explore
 #  all states exhastively but focuses on states that reveal some new content.
 #  It should be faster and produce smaller, more easily understandable outputs.
-REDUCED_CRAWL = True
+REDUCED_CRAWL = False
 
 LOG_LEVEL = logging.INFO
 

@@ -24,7 +24,7 @@ let us know where this software is being used.
 
 from .mode_accessibility_vision_users import *
 
-WINDOW_SIZE = (1500, 3500)
-REDUCED_CRAWL = True
+WINDOW_SIZE = (1280, 1024)
+REDUCED_CRAWL = False
 MULTI = False
 NUM_THREADS = 1

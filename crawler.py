@@ -98,6 +98,7 @@ if __name__ == '__main__':
     proxy = os.getenv("PROXY")
     browser = os.getenv("BROWSER")
     print("get args")
+    print(proxy)
     args, entry_points = parse_args()
 
     logger.debug(f'Loading config mode: {args.mode}')
@@ -119,10 +120,14 @@ if __name__ == '__main__':
     elif browser == "edge":
         config.OUTPUT_DIR = Path(os.getenv("OUTPUT_EDGE") + "/" + os.getenv("URL_NAME_ID"))
 
+    config.WINDOW_SIZE = (1280, 1024)
+    config.REDUCED_CRAWL = False
+
     if args.log_level is not None:
         config.LOG_LEVEL = args.log_level
     print(entry_points)
     print("proxy", proxy)
+    # exit(1)
     if proxy == "True":
         config.PROXY = True
         config.PROXY_HOST = os.getenv('PROXY_HOST')

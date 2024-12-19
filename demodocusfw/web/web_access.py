@@ -258,7 +258,6 @@ class WebAccess(Access):
     # Overridden functions from Access
     #
     def load(self, url):
-        print("edooooooo load", url)
         """Navigates to the entry point, loads it up without running JavaScript and saves it.
         This "bare bones" version of the entry page will be used when forward-tracking to states.
         Then the function injects the source back into the browser (with JavaScript) to begin crawling.
@@ -1280,7 +1279,19 @@ class WebAccess(Access):
         tab_dict = self._current_state_data.tab_dict
 
         # If the start element isn't in the tab order, assume index 0.
-        start_index = 0 if start_xpath not in tab_dict else tab_dict[start_xpath]["tab_place"]
+        print("start_xpath", start_xpath)
+        print("self._current_state_data", self._current_state_data)
+        print("self._current_state_data.orig_focused_xpath", self._current_state_data.orig_focused_xpath)
+        if start_xpath is None:
+            start_index = 0
+        else:
+            start_index = 0 if start_xpath not in tab_dict else tab_dict[start_xpath]["tab_place"]
+        if end_xpath is None:
+            return -1
+        print("end_xpath", end_xpath)
+        # print("tab_dict", tab_dict)
+        if tab_dict is None:
+            return -1
         if end_xpath not in tab_dict:
             return -1  # Target element is not in the tab order.
         end_index = tab_dict[end_xpath]["tab_place"]
